@@ -29,8 +29,11 @@ set >> %OUTFILE%
 echo.
 
 rem Driver store
-call :DoCommandSection dir /s "%systemroot%\system32\DriverStore\FileRepository\osvr_cdc.inf*"
 call :DoCommandSection pnputil -e
+rem CDC driver
+call :DoCommandSection dir /s "%systemroot%\system32\DriverStore\FileRepository\osvr_cdc.inf*"
+rem DFU driver
+call :DoCommandSection dir /s "%systemroot%\system32\DriverStore\FileRepository\atmel_usb_dfu.inf*"
 
 rem SetupAPI - at least one will fail, that's OK
 call :DoFileSection "%SystemRoot%\setupapi.log"
@@ -46,7 +49,10 @@ rem call :DoPOSHSection "Get-WmiObject -class Win32_PnPSignedDriver -namespace '
 call :DoPOSHSection "Get-WmiObject -class Win32_PnPSignedDriver -namespace 'root\CIMV2' | where {$_.HardwareID -like 'USB\VID_1532&PID_0B00*'} | Select -Property * -ExcludeProperty __*,SystemProperties"
 
 rem This doozy gets the data that shows up in "Events" in a device manager properties dialog.
+rem HDK USB hardware ID 
 call :DoPOSHSection "Get-WinEvent -FilterHashtable @{ProviderName=@('Microsoft-Windows-UserPnp','Microsoft-Windows-Kernel-PnP')}  | where {$_.Message.Contains('VID_1532&PID_0B00')} | select TimeCreated,Message | Sort-Object TimeCreated |fl"
+rem Sensics unofficial and official monitor PNP hardware IDs
+call :DoPOSHSection "Get-WinEvent -FilterHashtable @{ProviderName=@('Microsoft-Windows-UserPnp','Microsoft-Windows-Kernel-PnP')}  | where {$_.Message.Contains('DISPLAY\SVR') -or $_.Message.Contains('DISPLAY\SEN')} | select TimeCreated,Message | Sort-Object TimeCreated |fl"
 
 rem END DATA GATHERING
 
