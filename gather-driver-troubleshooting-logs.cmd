@@ -44,8 +44,14 @@ rem DPInst
 call :DoFileSection "%SystemRoot%\dpinst.log"
 
 rem WMI through powershell
+rem Get all USB devices
 call :DoPOSHSection "Get-WmiObject -class Win32_PnPEntity -namespace 'root\CIMV2' | where {$_.DeviceID -like 'USB\*'} | select name,hardwareid,status,service,errordescription"
-rem call :DoPOSHSection "Get-WmiObject -class Win32_PnPSignedDriver -namespace 'root\CIMV2' | where {$_.HardwareID -like 'USB\*'} | Select -Property * -ExcludeProperty __*,SystemProperties"
+rem Get all HID devices - should get one like HID\VID_1532&PID_0B00&REV_0100&MI_02
+call :DoPOSHSection "Get-WmiObject -class Win32_PnPEntity -namespace 'root\CIMV2' | where {$_.DeviceID -like 'HID\*'} | select name,hardwareid,status,service,errordescription"
+rem Get all monitors - should see SEN1019 (old firmware) or SVR1019 (new firmware)
+call :DoPOSHSection "Get-WmiObject -class Win32_PnPEntity -namespace 'root\CIMV2' | where {$_.DeviceID -like 'MONITOR\*'} | select name,hardwareid,status,service,errordescription"
+
+rem get signed driver data
 call :DoPOSHSection "Get-WmiObject -class Win32_PnPSignedDriver -namespace 'root\CIMV2' | where {$_.HardwareID -like 'USB\VID_1532&PID_0B00*'} | Select -Property * -ExcludeProperty __*,SystemProperties"
 
 rem This doozy gets the data that shows up in "Events" in a device manager properties dialog.
